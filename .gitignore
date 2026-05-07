@@ -1,0 +1,27 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Archivos temporales
+*.tmp
+*.bak
+*.swp
+*~
+
+# Cosas de editores
+.vscode/
+.idea/
+
+# NO ignorar PDFs (queremos versionarlos)
+# Si en algún momento separas el contenido de los archivos, ajusta aquí.
+
+# Datos sensibles — POR SI ACASO. Este repo NO debe contener nada de esto.
+**/clientes/
+**/papeles-de-trabajo/
+**/cfdi/
+*.xml
+**/secrets/
+.env

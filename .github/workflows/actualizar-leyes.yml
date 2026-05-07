@@ -1,0 +1,112 @@
+name: Actualizar leyes fiscales
+
+# Cuándo se ejecuta
+on:
+  # Cada lunes a las 15:00 UTC (9:00 AM hora de Querétaro / Ciudad de México, GMT-6)
+  schedule:
+    - cron: '0 15 * * 1'
+
+  # También se puede correr manualmente desde la pestaña Actions de GitHub
+  workflow_dispatch:
+
+jobs:
+  actualizar:
+    runs-on: ubuntu-latest
+
+    # Permisos necesarios para que el bot pueda hacer commit/push
+    permissions:
+      contents: write
+
+    steps:
+      # 1. Clonar el repo
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      # 2. Hacer ejecutable el script (por si acaso se perdió el permiso al clonar)
+      - name: Preparar script
+        run: chmod +x scripts/actualizar.sh
+
+      # 3. Tomar "huella digital" de los PDFs ANTES de actualizar
+      - name: Hash de PDFs antes
+        id: hash_antes
+        run: |
+          find . -name "*.pdf" -type f -exec sha256sum {} \; | sort > /tmp/hashes_antes.txt
+          echo "PDFs antes:"
+          wc -l /tmp/hashes_antes.txt
+
+      # 4. Correr el script de actualización
+      - name: Descargar leyes desde fuentes oficiales
+        run: bash scripts/actualizar.sh
+
+      # 5. Tomar "huella digital" DESPUÉS de actualizar
+      - name: Hash de PDFs después
+        id: hash_despues
+        run: |
+          find . -name "*.pdf" -type f -exec sha256sum {} \; | sort > /tmp/hashes_despues.txt
+          echo "PDFs después:"
+          wc -l /tmp/hashes_despues.txt
+
+      # 6. Detectar qué archivos cambiaron y armar el mensaje de commit
+      - name: Detectar cambios
+        id: cambios
+        run: |
+          # Diff de hashes — los que cambiaron aparecerán aquí
+          if diff -q /tmp/hashes_antes.txt /tmp/hashes_despues.txt > /dev/null; then
+            echo "hubo_cambios=false" >> $GITHUB_OUTPUT
+            echo "✓ Sin cambios. No hay nada que commitear."
+          else
+            echo "hubo_cambios=true" >> $GITHUB_OUTPUT
+
+            # Lista de archivos cambiados (sin el hash, solo el path)
+            comm -13 /tmp/hashes_antes.txt /tmp/hashes_despues.txt | awk '{print $2}' | sed 's|^\./||' > /tmp/archivos_cambiados.txt
+
+            echo "📝 Archivos modificados:"
+            cat /tmp/archivos_cambiados.txt
+
+            # Generar mensaje de commit
+            FECHA=$(date +"%Y-%m-%d")
+            CANTIDAD=$(wc -l < /tmp/archivos_cambiados.txt)
+
+            # Resumen corto en el título del commit
+            echo "commit_titulo=update: $CANTIDAD ley(es) actualizada(s) — $FECHA" >> $GITHUB_OUTPUT
+
+            # Cuerpo detallado para el commit
+            {
+              echo "commit_cuerpo<<EOF"
+              echo "Actualización automática semanal."
+              echo ""
+              echo "Archivos modificados:"
+              while IFS= read -r archivo; do
+                echo "  - $archivo"
+              done < /tmp/archivos_cambiados.txt
+              echo ""
+              echo "Verifica con: python3 scripts/verificar_vigencia.py"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          fi
+
+      # 7. Commit y push (solo si hubo cambios)
+      - name: Commit y push
+        if: steps.cambios.outputs.hubo_cambios == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .
+          git commit -m "${{ steps.cambios.outputs.commit_titulo }}" -m "${{ steps.cambios.outputs.commit_cuerpo }}"
+          git push
+
+      # 8. Resumen visible en GitHub Actions
+      - name: Resumen
+        run: |
+          if [ "${{ steps.cambios.outputs.hubo_cambios }}" = "true" ]; then
+            echo "### ✅ Leyes actualizadas" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Archivos modificados:**" >> $GITHUB_STEP_SUMMARY
+            while IFS= read -r archivo; do
+              echo "- \`$archivo\`" >> $GITHUB_STEP_SUMMARY
+            done < /tmp/archivos_cambiados.txt
+          else
+            echo "### ✓ Sin cambios esta semana" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Las versiones oficiales de los PDFs no cambiaron." >> $GITHUB_STEP_SUMMARY
+          fi

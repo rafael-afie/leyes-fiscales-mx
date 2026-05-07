@@ -15,6 +15,7 @@ Referencia rápida de siglas y términos que aparecen en este repo. Útil para q
 | **LIEPS** | Ley del IEPS | `otros/LIEPS.pdf` |
 | **LIF** | Ley de Ingresos de la Federación | `otros/LIF_2026.pdf` |
 | **LSS** | Ley del Seguro Social | `lss/LSS.pdf` |
+| **LIFNVT** | Ley del Instituto del Fondo Nacional de la Vivienda para los Trabajadores (Ley del INFONAVIT) | `infonavit/LIFNVT.pdf` |
 | **LFT** | Ley Federal del Trabajo | `lft/LFT.pdf` |
 | **RMF** | Resolución Miscelánea Fiscal | `rmf/RMF_2026.pdf` |
 

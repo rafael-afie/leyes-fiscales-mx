@@ -1,102 +1,92 @@
 # Leyes Fiscales México
 
-Repositorio personal con las leyes fiscales y laborales vigentes en México, organizadas para consulta con Claude (Cowork, Projects o chat con archivos adjuntos).
+Compendio versionado de la legislación fiscal y laboral mexicana, organizado en dos planos:
 
-> **Privacidad:** Este repo contiene solo legislación pública (dominio público). NO subir aquí papeles de trabajo, pólizas, CFDIs ni datos de clientes — eso debe ir en repos privados aparte.
+- **`vigente/`** — snapshot actual de cada ordenamiento (lo que rige HOY)
+- **`historico/`** — snapshots por año (2020–2026) para clasificar CFDIs viejos con la ley que aplicaba en su momento
 
-## Última actualización
+Consumido por **ISD-conta** (motor de clasificación automática de CFDIs) como git submódulo. Actualizado semanalmente vía GitHub Actions desde fuentes oficiales.
 
-Snapshot al **6 de mayo de 2026**. Ver columna "Última reforma DOF" abajo para vigencia de cada ordenamiento.
+> **Privacidad:** Solo legislación pública. NO subir papeles de trabajo, pólizas, CFDIs ni datos de clientes — eso vive en repos privados aparte.
 
 ## Estructura
 
 ```
 leyes-fiscales-mx/
-├── lisr/           Ley del ISR + Reglamento
-├── liva/           Ley del IVA + Reglamento
-├── cff/            Código Fiscal de la Federación + Reglamento
-├── rmf/            Resolución Miscelánea Fiscal 2026 + Anexos clave
-├── lss/            Ley del Seguro Social + Reglamentos
-├── infonavit/      Ley del INFONAVIT
-├── lft/            Ley Federal del Trabajo
-├── otros/          LIF 2026, LIEPS y otros
-├── condensados/    Resúmenes y glosarios propios (lo que tú agregues)
-└── scripts/        Script para refrescar leyes desde fuentes oficiales
+├── vigente/                          ← snapshot CURRENT (se actualiza solo)
+│   ├── lisr/      LISR + Reglamento
+│   ├── liva/      LIVA + Reglamento
+│   ├── cff/       CFF + Reglamento
+│   ├── rmf/       RMF 2026 + Anexos
+│   ├── lss/       Ley Seguro Social + Reglamentos
+│   ├── infonavit/ Ley INFONAVIT
+│   ├── lft/       Ley Federal del Trabajo
+│   ├── otros/     LIF 2026, LIEPS, etc.
+│   └── condensados/ Glosario y resúmenes propios
+│
+├── historico/                        ← snapshots por año (NO se modifican)
+│   ├── 00-indices/  vigencias-por-ano.md + referencias condensadas
+│   ├── 2020/        01-leyes / 02-reglamentos / 03-RMF-y-anexos / 04-reformas-DOF
+│   ├── 2021/        idem
+│   ├── 2022/        idem
+│   ├── 2023/        idem
+│   ├── 2024/        idem
+│   ├── 2025/        idem
+│   ├── 2026/        idem
+│   └── fuentes-oficiales/  ligas DOF/SAT para auditoría
+│
+├── scripts/
+│   ├── actualizar.sh         descarga PDFs vigentes de diputados.gob.mx + sat.gob.mx
+│   ├── verificar_vigencia.py extrae "Última reforma DOF" de cada PDF
+│   ├── baja-leyes.sh         baja + convierte a MD para historico/00-indices/
+│   ├── limpia_ley.py         normalizador de texto extraído de PDFs
+│   └── setup-git-hetzner.sh  bootstrap del repo en VPS Hetzner (futuro)
+│
+├── claude-project-setup/     instrucciones para subir a Claude Projects
+├── docs/HETZNER-DEPLOYMENT.md plan de migración a VPS productivo
+└── .github/workflows/actualizar-leyes.yml   GitHub Action lunes 9 AM CDMX
 ```
 
-## Inventario
+## Cómo lo usa ISD-conta
 
-### Leyes federales (fuente: diputados.gob.mx)
+```python
+from pathlib import Path
 
-| Archivo | Ley | Última reforma DOF | Páginas |
-|---|---|---|---|
-| `cff/CFF.pdf` | Código Fiscal de la Federación | 09-04-2026 | 377 |
-| `cff/RCFF.pdf` | Reglamento del CFF | — | 40 |
-| `lisr/LISR.pdf` | Ley del Impuesto Sobre la Renta | 01-04-2024 | 313 |
-| `lisr/RLISR.pdf` | Reglamento de la LISR | 06-05-2016 | 93 |
-| `liva/LIVA.pdf` | Ley del Impuesto al Valor Agregado | 12-11-2021 | 128 |
-| `liva/RLIVA.pdf` | Reglamento de la LIVA | 25-09-2014 | — |
-| `lss/LSS.pdf` | Ley del Seguro Social | 15-01-2026 | 181 |
-| `lss/RLSS_MACERF.pdf` | Reg. LSS – Afiliación, Clasificación, Recaudación, Fiscalización | — | 111 |
-| `lss/RLSS_MAEBA.pdf` | Reg. LSS – Afiliación de Empresas y Beneficiarios | — | 19 |
-| `infonavit/LIFNVT.pdf` | Ley del INFONAVIT | — | 93 |
-| `lft/LFT.pdf` | Ley Federal del Trabajo | 15-01-2026 | 452 |
-| `otros/LIF_2026.pdf` | Ley de Ingresos de la Federación 2026 | 07-11-2025 | 47 |
-| `otros/LIEPS.pdf` | Ley del IEPS | — | 165 |
+LEYES = Path(__file__).parent / "data" / "leyes-fiscales-mx"
 
-> Aunque LISR y LIVA muestran fechas anteriores, esa es la versión vigente. Las reformas para 2026 a estas dos leyes se publicaron en la **LIF 2026** (DOF 7-nov-2025), no en el cuerpo principal.
+# Clasificar CFDI del 2024-08
+snapshot_2024 = LEYES / "historico" / "2024" / "01-leyes" / "vigencias.md"
+contexto = snapshot_2024.read_text()
 
-### Resolución Miscelánea Fiscal 2026 (fuente: sat.gob.mx)
-
-| Archivo | Contenido | DOF |
-|---|---|---|
-| `rmf/RMF_2026.pdf` | Texto completo RMF 2026 (666 páginas) | 28-12-2025 |
-| `rmf/Anexo_1_RMF_2026.pdf` | Formas oficiales fiscales | 28-12-2025 |
-| `rmf/Anexo_7_RMF_2026.pdf` | Criterios normativos del SAT | 09-01-2026 |
-| `rmf/Anexo_8_RMF_2026.pdf` | Tarifas ISR 2026 | 28-12-2025 |
-
-## Cómo usar este repo
-
-### Opción A: Con Cowork (recomendada)
-
-1. Clona el repo a tu Mac:
-   ```bash
-   git clone https://github.com/TU_USUARIO/leyes-fiscales-mx.git ~/Documents/leyes-fiscales-mx
-   ```
-2. En Cowork, da acceso a la carpeta `~/Documents/leyes-fiscales-mx/`.
-3. Pídele consultas naturales: *"Revisa el Art. 27 LISR y dime los requisitos de las deducciones autorizadas para personas morales."*
-
-Ventaja: no consume tu límite de "knowledge" del Claude Project — Cowork lee bajo demanda.
-
-### Opción B: Con Claude Project
-
-Sube selectivamente los PDFs que más uses. Para no saturar la capacidad del proyecto, prioriza en este orden:
-
-1. CFF + Anexo 7 RMF (criterios SAT)
-2. RMF 2026 (texto principal)
-3. LISR + Anexo 8 RMF (tarifas)
-4. LIVA
-5. LSS + INFONAVIT (si manejas nómina)
-6. LFT + LIEPS (según necesidad)
-
-## Actualización
-
-Las leyes federales cambian. Para refrescar el repo a la última versión publicada en diputados.gob.mx, ejecuta:
-
-```bash
-cd leyes-fiscales-mx
-bash scripts/actualizar.sh
+# Clasificar CFDI del mes vigente
+lisr_actual = LEYES / "vigente" / "lisr" / "LISR.pdf"
 ```
 
-El script descarga sobre los archivos existentes y muestra un diff de fechas de "Última reforma" si algo cambió. Revisa los cambios antes de hacer commit.
+El motor de clasificación selecciona el snapshot correcto según `fecha_emision` del CFDI y carga solo los artículos relevantes según régimen + clave SAT del producto.
+
+## Actualización automática
+
+**GitHub Action (`.github/workflows/actualizar-leyes.yml`)** corre cada lunes 9 AM hora de Querétaro:
+
+1. Descarga PDFs desde diputados.gob.mx y sat.gob.mx (`scripts/actualizar.sh`)
+2. Hashea antes/después para detectar cambios reales (no solo timestamps)
+3. Si hubo cambios: commit + push automático con mensaje detallado
+4. Si no: termina sin tocar nada
+
+**ISD-conta** corre un watcher cada 6 h que detecta commits nuevos en este remote y muestra alerta en el dashboard ("Hay reforma pendiente de aprobar"). Tú/contadora aprueba → submódulo se actualiza.
+
+Reforma manual: `bash scripts/actualizar.sh` desde local, después commit y push.
 
 ## Convención de commits
 
-Para mantener trazabilidad fiscal:
+- `update: 1 ley(es) actualizada(s) — YYYY-MM-DD` ← lo genera la GH Action
+- `add: Anexo 1-A RMF 2026` ← nuevos anexos
+- `snapshot: rotación anual 2027 → historico/` ← snapshot anual del vigente al cierre de año
+- `docs: …` ← README / docs
 
-- `update: CFF reforma DOF 09-04-2026` — al refrescar una ley reformada
-- `add: Anexo 1-A RMF 2026` — al sumar un nuevo anexo
-- `docs: actualizar índice` — cambios al README o a `condensados/`
+## Inventario vigente
+
+Ver `vigente/` y correr `python3 scripts/verificar_vigencia.py` para el reporte actualizado de "Última reforma DOF" por archivo.
 
 ## Fuentes oficiales
 
@@ -106,4 +96,4 @@ Para mantener trazabilidad fiscal:
 
 ## Disclaimer
 
-Esta es una compilación personal con fines de consulta profesional. Las versiones oficiales vinculantes son las publicadas en el DOF y en los portales oficiales del gobierno mexicano. Verifica siempre contra la fuente oficial antes de tomar decisiones que tengan efectos fiscales o legales.
+Compilación profesional para consulta. Las versiones vinculantes son las publicadas en el DOF y portales oficiales. Verifica siempre la fuente oficial antes de tomar decisiones con efectos fiscales o legales.

@@ -18,23 +18,24 @@ except ImportError:
 
 ROOT = Path(__file__).resolve().parent.parent
 
-# Lista de PDFs a verificar (relativos a la raíz del repo)
+# Lista de PDFs vigentes a verificar (relativos a la raíz del repo)
+# Estructura nueva: vigente/<dir>/<archivo>.pdf
 PDFS = [
-    ('CFF',           'cff/CFF.pdf'),
-    ('RCFF',          'cff/RCFF.pdf'),
-    ('LISR',          'lisr/LISR.pdf'),
-    ('RLISR',         'lisr/RLISR.pdf'),
-    ('LIVA',          'liva/LIVA.pdf'),
-    ('RLIVA',         'liva/RLIVA.pdf'),
-    ('LSS',           'lss/LSS.pdf'),
-    ('LIFNVT',        'infonavit/LIFNVT.pdf'),
-    ('LFT',           'lft/LFT.pdf'),
-    ('LIF 2026',      'otros/LIF_2026.pdf'),
-    ('LIEPS',         'otros/LIEPS.pdf'),
-    ('RMF 2026',      'rmf/RMF_2026.pdf'),
-    ('Anexo 1 RMF',   'rmf/Anexo_1_RMF_2026.pdf'),
-    ('Anexo 7 RMF',   'rmf/Anexo_7_RMF_2026.pdf'),
-    ('Anexo 8 RMF',   'rmf/Anexo_8_RMF_2026.pdf'),
+    ('CFF',           'vigente/cff/CFF.pdf'),
+    ('RCFF',          'vigente/cff/RCFF.pdf'),
+    ('LISR',          'vigente/lisr/LISR.pdf'),
+    ('RLISR',         'vigente/lisr/RLISR.pdf'),
+    ('LIVA',          'vigente/liva/LIVA.pdf'),
+    ('RLIVA',         'vigente/liva/RLIVA.pdf'),
+    ('LSS',           'vigente/lss/LSS.pdf'),
+    ('LIFNVT',        'vigente/infonavit/LIFNVT.pdf'),
+    ('LFT',           'vigente/lft/LFT.pdf'),
+    ('LIF 2026',      'vigente/otros/LIF_2026.pdf'),
+    ('LIEPS',         'vigente/otros/LIEPS.pdf'),
+    ('RMF 2026',      'vigente/rmf/RMF_2026.pdf'),
+    ('Anexo 1 RMF',   'vigente/rmf/Anexo_1_RMF_2026.pdf'),
+    ('Anexo 7 RMF',   'vigente/rmf/Anexo_7_RMF_2026.pdf'),
+    ('Anexo 8 RMF',   'vigente/rmf/Anexo_8_RMF_2026.pdf'),
 ]
 
 # Patrones para extraer fechas

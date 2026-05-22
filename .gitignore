@@ -1,27 +1,77 @@
-# macOS
+# ============================================================
+# .gitignore para leyes-fiscales 2020-2026
+# Base: el repo leyes-fiscales-mx
+# ============================================================
+
+# === macOS ===
 .DS_Store
 .AppleDouble
 .LSOverride
 Icon
 ._*
 
-# Archivos temporales
+# === Archivos temporales ===
 *.tmp
 *.bak
 *.swp
 *~
+.tmp/
 
-# Cosas de editores
+# === Editores ===
 .vscode/
 .idea/
+*.code-workspace
 
-# NO ignorar PDFs (queremos versionarlos)
-# Si en algún momento separas el contenido de los archivos, ajusta aquí.
+# === Python (scripts) ===
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
 
-# Datos sensibles — POR SI ACASO. Este repo NO debe contener nada de esto.
+# ============================================================
+# CRÍTICO: papeles de trabajo y datos privados de clientes
+# ============================================================
+# Si alguna vez metes papeles de trabajo dentro de las carpetas de año,
+# esos NO deben ir al repo. Convención: carpetas con prefijo "_papeles-"
+# o "_priv-" para identificar claro lo privado.
+
+# Papeles de trabajo y CFDIs
+**/_papeles-de-trabajo/
+**/_priv-*/
 **/clientes/
-**/papeles-de-trabajo/
 **/cfdi/
+**/CFDI/
+**/xml/
 *.xml
+
+# Conciliaciones bancarias y movimientos
+**/conciliacion-*.xlsx
+**/conciliacion-*.csv
+**/movimientos-*.csv
+
+# Datos fiscales
+**/declaraciones/
+**/dictamen-*/
+**/papeles-*/
+
+# Secrets
 **/secrets/
-.env
+*.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+
+# Snapshots SUA, CONTPAQ, COI
+*.suaq
+*.sua
+*.bak
+
+# ============================================================
+# Archivos de trabajo de Claude Code/Cowork (no relevantes)
+# ============================================================
+.claude/
+.cowork/
+CLAUDE.md

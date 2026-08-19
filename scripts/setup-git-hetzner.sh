@@ -22,6 +22,12 @@ HETZNER_GIT_URL="ssh://git@<TU-IP-HETZNER>:<PUERTO>/<RUTA>/leyes-fiscales-histor
 
 BRANCH="main"
 
+# Identidad de los commits. Vacías a propósito: si tu máquina ya tiene
+# `git config --global user.email`, esa se usa y aquí no hay nada que editar.
+# Llénalas sólo si quieres una identidad distinta para este repo.
+GIT_USER_NAME=""
+GIT_USER_EMAIL=""
+
 # === Validar ubicación ===
 if [[ ! -f "README.md" ]] || [[ ! -d "00-indices" ]]; then
   echo "❌ Error: corre este script desde la raíz de 'leyes-fiscales 2020 a 2025/'"
@@ -50,8 +56,31 @@ if [[ ! -d ".git" ]]; then
   git init
 fi
 
-git config user.name "Rafa"
-git config user.email "rafael_afie@hotmail.com"
+# === Identidad de los commits ===
+# Un correo escrito a mano en un script versionado es un correo publicado:
+# este repo es público. Se toma de las variables de arriba, y si están
+# vacías, de la configuración global de la máquina.
+if [[ -n "$GIT_USER_NAME" ]]; then
+  git config user.name "$GIT_USER_NAME"
+fi
+if [[ -n "$GIT_USER_EMAIL" ]]; then
+  git config user.email "$GIT_USER_EMAIL"
+fi
+
+# Sin identidad, git NO falla: se inventa una con el nombre de la cuenta y
+# «usuario@hostname» de la máquina, y la escribe en cada commit. Eso publica
+# el nombre de red del equipo, que es justo lo que uno no quiere que viaje en
+# un repo compartido. Por eso se para aquí, en vez de dejarlo pasar.
+if ! git config user.name >/dev/null || ! git config user.email >/dev/null; then
+  echo "❌ Git no sabe quién firma los commits, y si lo dejo seguir los firmará"
+  echo "   como: $(git var GIT_AUTHOR_IDENT | sed 's/ [0-9]* [-+][0-9]*$//')"
+  echo "   Ese correo sale del hostname de esta máquina y queda en el historial."
+  echo ""
+  echo "   Llena GIT_USER_NAME y GIT_USER_EMAIL arriba, o déjalo global:"
+  echo "     git config --global user.name  \"Tu Nombre\""
+  echo "     git config --global user.email tu@correo"
+  exit 1
+fi
 
 # === Cambiar rama default a main ===
 git branch -M "$BRANCH" 2>/dev/null || true
